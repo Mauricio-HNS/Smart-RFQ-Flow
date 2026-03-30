@@ -1,4 +1,4 @@
-import type { Customer, DashboardOverview, Product, Rfq } from "./types";
+import type { AuditLog, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
 
 export const overview: DashboardOverview = {
   totalRfqs: 14,
@@ -91,5 +91,59 @@ export const rfqs: Rfq[] = [
         finalPrice: 166
       }
     ]
+  }
+];
+
+export const offers: Offer[] = [
+  {
+    id: "50000000-0000-0000-0000-000000000001",
+    rfqId: "30000000-0000-0000-0000-000000000002",
+    version: 1,
+    totalAmount: 4150,
+    currency: "EUR",
+    generatedAt: "2026-03-29T18:15:00Z",
+    sentAt: null
+  }
+];
+
+export const auditLogs: AuditLog[] = [
+  {
+    id: "60000000-0000-0000-0000-000000000001",
+    entityName: "Rfq",
+    entityId: "30000000-0000-0000-0000-000000000001",
+    action: "RfqSubmitted",
+    performedBy: "11111111-1111-1111-1111-111111111111",
+    timestamp: "2026-03-30T05:05:00Z"
+  },
+  {
+    id: "60000000-0000-0000-0000-000000000002",
+    entityName: "Offer",
+    entityId: "50000000-0000-0000-0000-000000000001",
+    action: "OfferGenerated",
+    performedBy: "11111111-1111-1111-1111-111111111111",
+    timestamp: "2026-03-29T18:15:00Z"
+  }
+];
+
+export const integrationLogs: IntegrationLog[] = [
+  {
+    id: "70000000-0000-0000-0000-000000000001",
+    sourceSystem: "SmartRFQ",
+    targetSystem: "SAP",
+    operation: "PricingSimulation",
+    status: "Success",
+    requestPayload: "RFQ-20260330-001",
+    responsePayload: "Pricing simulation completed.",
+    createdAt: "2026-03-30T05:10:00Z"
+  },
+  {
+    id: "70000000-0000-0000-0000-000000000002",
+    sourceSystem: "SmartRFQ",
+    targetSystem: "Salesforce",
+    operation: "OpportunityLookup",
+    status: "Success",
+    requestPayload: "OPP-EMEA-1001",
+    responsePayload: "Opportunity fetched.",
+    createdAt: "2026-03-30T05:12:00Z"
   }
 ];

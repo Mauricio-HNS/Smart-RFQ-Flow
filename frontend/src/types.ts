@@ -60,3 +60,35 @@ export interface DashboardOverview {
   totalOfferAmount: number;
   averageApprovalLeadTimeHours: number;
 }
+
+export interface Offer {
+  id: string;
+  rfqId: string;
+  version: number;
+  totalAmount: number;
+  currency: string;
+  generatedAt: string;
+  sentAt?: string | null;
+}
+
+export interface AuditLog {
+  id: string;
+  entityName: string;
+  entityId: string;
+  action: string;
+  performedBy: string;
+  timestamp: string;
+  oldValues?: string | null;
+  newValues?: string | null;
+}
+
+export interface IntegrationLog {
+  id: string;
+  sourceSystem: string;
+  targetSystem: string;
+  operation: string;
+  status: string;
+  requestPayload?: string | null;
+  responsePayload?: string | null;
+  createdAt: string;
+}
