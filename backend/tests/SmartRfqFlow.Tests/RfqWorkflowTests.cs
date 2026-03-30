@@ -54,4 +54,36 @@ public sealed class RfqWorkflowTests
 
         rfq.Status.Should().Be(RfqStatus.Approved);
     }
+
+    [Fact]
+    public void MarkAsSent_ShouldMoveToSentToCustomer_WhenOfferWasGenerated()
+    {
+        var rfq = new Rfq
+        {
+            Number = "RFQ-TEST-003",
+            CustomerId = Guid.NewGuid(),
+            CustomerName = "Test Customer",
+            CreatedBy = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            DesiredDeliveryDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(10))
+        };
+
+        rfq.AddItem(new RfqItem
+        {
+            ProductId = Guid.NewGuid(),
+            ProductName = "Sensor",
+            ProductSku = "SNS-002",
+            Quantity = 3,
+            RequestedPrice = 150m
+        });
+
+        rfq.Submit();
+        rfq.MoveToPricing();
+        rfq.MoveToApproval();
+        rfq.Approve();
+        rfq.MarkOfferGenerated();
+        rfq.MarkAsSent();
+
+        rfq.Status.Should().Be(RfqStatus.SentToCustomer);
+    }
 }
