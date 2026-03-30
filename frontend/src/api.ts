@@ -1,5 +1,6 @@
 import {
   auditLogs as fallbackAuditLogs,
+  catalogProducts as fallbackCatalogProducts,
   customers as fallbackCustomers,
   integrationLogs as fallbackIntegrationLogs,
   offers as fallbackOffers,
@@ -7,7 +8,7 @@ import {
   products as fallbackProducts,
   rfqs as fallbackRfqs
 } from "./data";
-import type { AuditLog, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
+import type { AuditLog, CatalogSearchResponse, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5058";
 
@@ -52,6 +53,43 @@ export const api = {
   getOffers: () => getJson<Offer[]>("/api/offers", fallbackOffers),
   getAuditLogs: () => getJson<AuditLog[]>("/api/audit", fallbackAuditLogs),
   getIntegrationLogs: () => getJson<IntegrationLog[]>("/api/integrations/logs", fallbackIntegrationLogs),
+  searchCatalog: async (query: { search?: string; category?: string; manufacturer?: string; region?: string; inStockOnly?: boolean; page?: number; pageSize?: number; }) => {
+    const params = new URLSearchParams();
+
+    if (query.search) params.set("search", query.search);
+    if (query.category) params.set("category", query.category);
+    if (query.manufacturer) params.set("manufacturer", query.manufacturer);
+    if (query.region) params.set("region", query.region);
+    if (query.inStockOnly) params.set("inStockOnly", "true");
+    params.set("page", String(query.page ?? 1));
+    params.set("pageSize", String(query.pageSize ?? 24));
+
+    const fallbackPage = query.page ?? 1;
+    const fallbackPageSize = query.pageSize ?? 24;
+    const filtered = fallbackCatalogProducts.filter((product) => {
+      const matchesSearch = query.search
+        ? `${product.name} ${product.sku} ${product.description ?? ""}`.toLowerCase().includes(query.search.toLowerCase())
+        : true;
+      const matchesCategory = query.category ? product.category === query.category : true;
+      const matchesManufacturer = query.manufacturer ? product.manufacturer === query.manufacturer : true;
+      const matchesRegion = query.region ? product.region === query.region : true;
+      const matchesStock = query.inStockOnly ? product.stockAvailable > 0 : true;
+
+      return matchesSearch && matchesCategory && matchesManufacturer && matchesRegion && matchesStock;
+    });
+
+    const fallback: CatalogSearchResponse = {
+      items: filtered.slice((fallbackPage - 1) * fallbackPageSize, fallbackPage * fallbackPageSize),
+      totalItems: filtered.length,
+      page: fallbackPage,
+      pageSize: fallbackPageSize,
+      categories: Array.from(new Set(fallbackCatalogProducts.map((product) => product.category))).sort(),
+      manufacturers: Array.from(new Set(fallbackCatalogProducts.map((product) => product.manufacturer))).sort(),
+      regions: Array.from(new Set(fallbackCatalogProducts.map((product) => product.region))).sort()
+    };
+
+    return getJson<CatalogSearchResponse>(`/api/catalog/search?${params.toString()}`, fallback);
+  },
   approveRfq: (id: string) =>
     postJson<Rfq>(`/api/rfqs/${id}/approve`, { approvedBy: "22222222-2222-2222-2222-222222222222", comment: "Approved in demo workflow." }, fallbackRfqs[0]),
   rejectRfq: (id: string) =>

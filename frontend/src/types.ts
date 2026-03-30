@@ -23,6 +23,10 @@ export interface Product {
   id: string;
   sku: string;
   name: string;
+  category: string;
+  manufacturer: string;
+  region: string;
+  description?: string | null;
   basePrice: number;
   currency: string;
   leadTimeDays: number;
@@ -91,4 +95,14 @@ export interface IntegrationLog {
   requestPayload?: string | null;
   responsePayload?: string | null;
   createdAt: string;
+}
+
+export interface CatalogSearchResponse {
+  items: Product[];
+  totalItems: number;
+  page: number;
+  pageSize: number;
+  categories: string[];
+  manufacturers: string[];
+  regions: string[];
 }

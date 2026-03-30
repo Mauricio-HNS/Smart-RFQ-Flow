@@ -257,6 +257,13 @@ button {
   color: rgba(255, 255, 255, 0.8);
 }
 
+.checkbox-row {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  padding-top: 28px;
+}
+
 .form-grid select,
 .form-grid input,
 .form-grid textarea {
@@ -269,6 +276,21 @@ button {
 
 .full-span {
   grid-column: 1 / -1;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pagination-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
 }
 
 @media (max-width: 960px) {

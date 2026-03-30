@@ -1,7 +1,7 @@
 import { NavLink, Route, Routes } from "react-router-dom";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "./api";
-import type { AuditLog, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
+import type { AuditLog, CatalogSearchResponse, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
 
 function Currency({ value }: { value: number }) {
   return <span>{new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value)}</span>;
@@ -159,9 +159,84 @@ function OffersPage({ offers, rfqs, onSendOffer }: { offers: Offer[]; rfqs: Rfq[
   );
 }
 
-function CatalogPage({ customers, products }: { customers: Customer[]; products: Product[] }) {
+function CatalogPage({
+  customers,
+  products,
+  catalog,
+  filters,
+  onFiltersChange,
+  onPageChange
+}: {
+  customers: Customer[];
+  products: Product[];
+  catalog: CatalogSearchResponse | null;
+  filters: { search: string; category: string; manufacturer: string; region: string; inStockOnly: boolean; page: number; pageSize: number; };
+  onFiltersChange: (changes: Partial<{ search: string; category: string; manufacturer: string; region: string; inStockOnly: boolean; page: number; pageSize: number; }>) => void;
+  onPageChange: (page: number) => void;
+}) {
+  const totalPages = catalog ? Math.max(1, Math.ceil(catalog.totalItems / catalog.pageSize)) : 1;
+
   return (
-    <div className="page-grid two-columns">
+    <div className="page-grid">
+      <section className="panel">
+        <div className="panel-header">
+          <h2>Industrial Catalog Explorer</h2>
+          <span>{catalog?.totalItems ?? 0} matching products</span>
+        </div>
+        <div className="form-grid">
+          <label>
+            Search
+            <input value={filters.search} onChange={(event) => onFiltersChange({ search: event.target.value, page: 1 })} placeholder="SKU, name or description" />
+          </label>
+          <label>
+            Category
+            <select value={filters.category} onChange={(event) => onFiltersChange({ category: event.target.value, page: 1 })}>
+              <option value="">All categories</option>
+              {catalog?.categories.map((category) => <option key={category} value={category}>{category}</option>)}
+            </select>
+          </label>
+          <label>
+            Manufacturer
+            <select value={filters.manufacturer} onChange={(event) => onFiltersChange({ manufacturer: event.target.value, page: 1 })}>
+              <option value="">All manufacturers</option>
+              {catalog?.manufacturers.map((manufacturer) => <option key={manufacturer} value={manufacturer}>{manufacturer}</option>)}
+            </select>
+          </label>
+          <label>
+            Region
+            <select value={filters.region} onChange={(event) => onFiltersChange({ region: event.target.value, page: 1 })}>
+              <option value="">All regions</option>
+              {catalog?.regions.map((region) => <option key={region} value={region}>{region}</option>)}
+            </select>
+          </label>
+          <label className="checkbox-row">
+            <input type="checkbox" checked={filters.inStockOnly} onChange={(event) => onFiltersChange({ inStockOnly: event.target.checked, page: 1 })} />
+            Only show in-stock products
+          </label>
+        </div>
+        <div className="catalog-grid">
+          {catalog?.items.map((product) => (
+            <article key={product.id} className="table-card">
+              <header>
+                <strong>{product.name}</strong>
+                <span className={`status-pill ${product.stockAvailable > 0 ? "status-Approved" : "status-Rejected"}`}>
+                  {product.stockAvailable > 0 ? "InStock" : "Backorder"}
+                </span>
+              </header>
+              <p>{product.sku}</p>
+              <small>{product.category} · {product.manufacturer} · {product.region}</small>
+              <small>{product.description}</small>
+              <small><Currency value={product.basePrice} /> · Lead time {product.leadTimeDays} days</small>
+            </article>
+          ))}
+        </div>
+        <div className="pagination-row">
+          <button className="ghost-button" disabled={filters.page <= 1} onClick={() => onPageChange(filters.page - 1)}>Previous</button>
+          <span>Page {filters.page} of {totalPages}</span>
+          <button className="ghost-button" disabled={filters.page >= totalPages} onClick={() => onPageChange(filters.page + 1)}>Next</button>
+        </div>
+      </section>
+      <div className="page-grid two-columns">
       <section className="panel">
         <div className="panel-header">
           <h2>Customers</h2>
@@ -192,6 +267,7 @@ function CatalogPage({ customers, products }: { customers: Customer[]; products:
           ))}
         </div>
       </section>
+      </div>
     </div>
   );
 }
@@ -326,6 +402,16 @@ export default function App() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [integrationLogs, setIntegrationLogs] = useState<IntegrationLog[]>([]);
+  const [catalog, setCatalog] = useState<CatalogSearchResponse | null>(null);
+  const [catalogFilters, setCatalogFilters] = useState({
+    search: "",
+    category: "",
+    manufacturer: "",
+    region: "",
+    inStockOnly: false,
+    page: 1,
+    pageSize: 24
+  });
 
   const nextOverview = useMemo<DashboardOverview>(() => {
     if (!overview) {
@@ -356,9 +442,14 @@ export default function App() {
       api.getRfqs().then(setRfqs),
       api.getOffers().then(setOffers),
       api.getAuditLogs().then(setAuditLogs),
-      api.getIntegrationLogs().then(setIntegrationLogs)
+      api.getIntegrationLogs().then(setIntegrationLogs),
+      api.searchCatalog({ page: 1, pageSize: 24 }).then(setCatalog)
     ]);
   }, []);
+
+  useEffect(() => {
+    void api.searchCatalog(catalogFilters).then(setCatalog);
+  }, [catalogFilters]);
 
   if (!overview) {
     return <div className="loading-shell">Loading Smart RFQ Flow...</div>;
@@ -458,6 +549,10 @@ export default function App() {
     appendAudit("RfqCreated", "Rfq", newRfq.id);
   };
 
+  const handleCatalogFilterChange = (changes: Partial<typeof catalogFilters>) => {
+    setCatalogFilters((current) => ({ ...current, ...changes }));
+  };
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -483,7 +578,19 @@ export default function App() {
           <Route path="/new-rfq" element={<NewRfqPage customers={customers} products={products} onCreate={handleCreateRfq} />} />
           <Route path="/approvals" element={<ApprovalPage rfqs={rfqs} onApprove={handleApprove} onReject={handleReject} onGenerateOffer={handleGenerateOffer} />} />
           <Route path="/offers" element={<OffersPage offers={offers} rfqs={rfqs} onSendOffer={handleSendOffer} />} />
-          <Route path="/catalog" element={<CatalogPage customers={customers} products={products} />} />
+          <Route
+            path="/catalog"
+            element={
+              <CatalogPage
+                customers={customers}
+                products={products}
+                catalog={catalog}
+                filters={catalogFilters}
+                onFiltersChange={handleCatalogFilterChange}
+                onPageChange={(page) => handleCatalogFilterChange({ page })}
+              />
+            }
+          />
           <Route path="/analytics" element={<AnalyticsPage overview={nextOverview} />} />
           <Route path="/operations" element={<OperationsPage auditLogs={auditLogs} integrationLogs={integrationLogs} />} />
         </Routes>

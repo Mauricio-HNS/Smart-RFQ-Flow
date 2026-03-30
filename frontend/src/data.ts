@@ -31,6 +31,10 @@ export const products: Product[] = [
     id: "10000000-0000-0000-0000-000000000001",
     sku: "RFQ-CPU-100",
     name: "Industrial Controller",
+    category: "Controllers",
+    manufacturer: "Siemens",
+    region: "EMEA",
+    description: "Modular controller for multi-line industrial automation environments.",
     basePrice: 490,
     currency: "EUR",
     leadTimeDays: 7,
@@ -40,12 +44,41 @@ export const products: Product[] = [
     id: "10000000-0000-0000-0000-000000000002",
     sku: "RFQ-SNS-200",
     name: "Advanced Sensor Pack",
+    category: "Sensors",
+    manufacturer: "Honeywell",
+    region: "EMEA",
+    description: "Multi-signal sensor pack for predictive maintenance programs.",
     basePrice: 175,
     currency: "EUR",
     leadTimeDays: 14,
     stockAvailable: 42
   }
 ];
+
+const categories = ["Sensors", "Controllers", "Motors", "Valves", "Pumps", "Switchgear"];
+const manufacturers = ["Siemens", "ABB", "Schneider", "Bosch Rexroth", "Honeywell", "Emerson"];
+const regions = ["EMEA", "North America", "LATAM", "APAC"];
+
+export const catalogProducts: Product[] = Array.from({ length: 600 }, (_, index) => {
+  const category = categories[index % categories.length];
+  const manufacturer = manufacturers[index % manufacturers.length];
+  const region = regions[index % regions.length];
+  const itemNumber = index + 1;
+
+  return {
+    id: `catalog-${itemNumber}`,
+    sku: `IND-${category.slice(0, 3).toUpperCase()}-${String(itemNumber).padStart(5, "0")}`,
+    name: `${manufacturer} ${category} Module ${String(itemNumber).padStart(4, "0")}`,
+    category,
+    manufacturer,
+    region,
+    description: `Industrial-grade ${category.toLowerCase()} component designed for ${region} sourcing programs.`,
+    basePrice: 80 + (itemNumber % 45) * 17,
+    currency: "EUR",
+    leadTimeDays: 3 + itemNumber % 21,
+    stockAvailable: itemNumber % 9 === 0 ? 0 : 20 + itemNumber % 180
+  };
+});
 
 export const rfqs: Rfq[] = [
   {
