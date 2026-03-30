@@ -1,78 +1,79 @@
 # Smart RFQ Flow
 
-Smart RFQ Flow is a mini-enterprise platform that simulates the full RFQ-to-Offer lifecycle, combining RFQ creation, approval workflow, offer generation, auditability, integration-ready architecture and a corporate dashboard.
+<p align="center">
+  <img src="https://img.shields.io/badge/ASP.NET%20Core-9-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt="ASP.NET Core" />
+  <img src="https://img.shields.io/badge/React-TypeScript-0f172a?style=for-the-badge&logo=react&logoColor=61dafb" alt="React TypeScript" />
+  <img src="https://img.shields.io/badge/Architecture-Modular%20Monolith-153b52?style=for-the-badge" alt="Modular Monolith" />
+  <img src="https://img.shields.io/badge/Domain-RFQ%20to%20Offer-5b2333?style=for-the-badge" alt="RFQ to Offer" />
+</p>
 
-## Current foundation
+Smart RFQ Flow is a mini-enterprise platform that simulates the full RFQ-to-Offer lifecycle: customer onboarding, RFQ creation, pricing orchestration, approval workflow, offer generation, auditability, analytics and a sourcing-oriented catalog experience.
 
-This repository now includes:
+## Why this repository is strong for portfolio reviews
 
-- modular monolith backend in ASP.NET Core with Domain, Application, Infrastructure, API and Worker projects
-- in-memory demo repository with seeded users, customers, products and RFQs
-- core RFQ workflow rules for create, submit, approve, reject and offer generation
-- offer sending, audit trail and fake integration logs
-- audit trail creation for major business actions
-- React + TypeScript frontend with dashboard, RFQs, create flow, approvals, offers, catalog, analytics and operations views
-- solution and Docker Compose base for local evolution
-- CI workflow for build and test validation
-- industrial catalog explorer with server-side search, filters and pagination
-- sourcing console with catalog summary and batch import simulation
+- clear modular monolith structure with room to evolve into microservices
+- realistic enterprise workflow instead of isolated CRUD screens
+- backend-driven catalog search, filters and pagination
+- audit and integration logs for traceability
+- React frontend with a polished business-facing interface
+- clean expansion path for PostgreSQL, JWT, RabbitMQ and Playwright
 
-## Repository structure
+## Current scope
+
+- RFQ lifecycle from draft to sent offer
+- customer and product management
+- approval desk and offer center
+- analytics overview and processing metrics
+- fake Salesforce and SAP integrations
+- industrial catalog explorer
+- sourcing console with batch-import simulation
+
+## Architecture
 
 ```text
-Smart-RFQ-Flow/
-├── backend/
-│   ├── src/
-│   │   ├── SmartRfqFlow.Api
-│   │   ├── SmartRfqFlow.Application
-│   │   ├── SmartRfqFlow.Domain
-│   │   ├── SmartRfqFlow.Infrastructure
-│   │   └── SmartRfqFlow.Worker
-│   └── tests/
-│       └── SmartRfqFlow.Tests
-├── frontend/
-├── docs/
-├── docker-compose.yml
-└── SmartRfqFlow.sln
+frontend (React + TypeScript)
+    ->
+backend API (ASP.NET Core)
+    ->
+application layer
+    ->
+domain layer
+    ->
+in-memory infrastructure today
 ```
 
-## Implemented endpoints
+Projects:
 
-- `POST /api/auth/login`
-- `GET /api/customers`
-- `GET /api/customers/{id}`
-- `POST /api/customers`
-- `GET /api/products`
-- `GET /api/products/{id}`
-- `POST /api/products`
+- `backend/src/SmartRfqFlow.Api`
+- `backend/src/SmartRfqFlow.Application`
+- `backend/src/SmartRfqFlow.Domain`
+- `backend/src/SmartRfqFlow.Infrastructure`
+- `backend/src/SmartRfqFlow.Worker`
+- `backend/tests/SmartRfqFlow.Tests`
+- `frontend`
+
+## Key endpoints
+
 - `GET /api/catalog/search`
 - `GET /api/catalog/summary`
 - `POST /api/catalog/import`
 - `GET /api/rfqs`
-- `GET /api/rfqs/{id}`
-- `POST /api/rfqs`
-- `POST /api/rfqs/{id}/submit`
-- `POST /api/rfqs/{id}/request-pricing`
 - `POST /api/rfqs/{id}/approve`
-- `POST /api/rfqs/{id}/reject`
 - `POST /api/rfqs/{id}/generate-offer`
-- `GET /api/offers`
-- `GET /api/offers/{id}`
 - `POST /api/offers/{id}/send`
-- `GET /api/audit`
-- `GET /api/audit/entity/{entityName}/{entityId}`
 - `GET /api/analytics/overview`
-- `GET /api/analytics/rfq-status`
-- `GET /api/analytics/processing-time`
-- `GET /api/analytics/conversion`
 - `GET /api/integrations/logs`
-- `GET /external/salesforce/opportunities/{id}`
-- `POST /external/sap/pricing/{rfqId}`
 - `GET /health`
+
+Full technical notes:
+
+- `docs/architecture.md`
+- `docs/domain-workflow.md`
+- `docs/api.md`
 
 ## Run locally
 
-### Backend API
+### API
 
 ```bash
 dotnet run --project backend/src/SmartRfqFlow.Api/SmartRfqFlow.Api.csproj --urls http://localhost:5058
@@ -92,29 +93,19 @@ npm install
 npm run dev
 ```
 
-The frontend expects the API at `http://localhost:5058` by default and falls back to local demo data if the backend is unavailable.
+The frontend expects `http://localhost:5058` by default and falls back to local demo data if the API is offline.
 
-## Documentation
+## Quality and repo hygiene
 
-Technical notes live in:
+- solution file at `SmartRfqFlow.sln`
+- CI workflow ready in `.github/workflows/ci.yml`
+- root `.gitignore` covers .NET, Node and local build artifacts
+- tests cover RFQ workflow rules plus catalog import behavior
 
-- `docs/architecture.md`
-- `docs/domain-workflow.md`
-- `docs/api.md`
+## Next upgrades
 
-## Catalog strategy
-
-The catalog layer now follows a more realistic client-facing pattern:
-
-- search happens on the backend
-- filters are category, manufacturer, region and stock availability
-- pagination prevents the frontend from loading the entire catalog at once
-- the in-memory seed simulates a larger industrial catalog so the UI can demonstrate scale-oriented behavior
-
-## Suggested next steps
-
-1. Replace the in-memory repository with EF Core + PostgreSQL.
-2. Add JWT auth, roles and policy-based authorization.
-3. Introduce pricing integration adapters, retries and idempotent message handling.
-4. Expand analytics into fact tables and event-driven aggregation.
-5. Add Playwright E2E plus API integration tests.
+1. Replace in-memory persistence with EF Core + PostgreSQL.
+2. Add JWT authentication and role-based authorization.
+3. Introduce RabbitMQ and idempotent async processing.
+4. Add CSV or Excel catalog ingestion.
+5. Add Playwright E2E coverage.
