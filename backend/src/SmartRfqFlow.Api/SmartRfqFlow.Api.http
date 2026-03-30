@@ -1,0 +1,13 @@
+@SmartRfqFlow.Api_HostAddress = http://localhost:5227
+
+#if (EnableOpenAPI)
+GET {{SmartRfqFlow.Api_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+#endif
+
+GET {{SmartRfqFlow.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
