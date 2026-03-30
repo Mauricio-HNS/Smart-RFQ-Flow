@@ -1,7 +1,7 @@
 import { NavLink, Route, Routes } from "react-router-dom";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "./api";
-import type { AuditLog, CatalogSearchResponse, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
+import type { AuditLog, CatalogSearchResponse, CatalogSummary, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
 
 function Currency({ value }: { value: number }) {
   return <span>{new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(value)}</span>;
@@ -394,6 +394,38 @@ function OperationsPage({ auditLogs, integrationLogs }: { auditLogs: AuditLog[];
   );
 }
 
+function SourcingPage({
+  summary,
+  onImport
+}: {
+  summary: CatalogSummary | null;
+  onImport: () => void;
+}) {
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <h2>Sourcing Console</h2>
+        <span>Catalog operations for industrial procurement teams</span>
+      </div>
+      <div className="stats-grid compact">
+        <article className="stat-card"><span>Total products</span><strong>{summary?.totalProducts ?? 0}</strong></article>
+        <article className="stat-card"><span>In stock</span><strong>{summary?.inStockProducts ?? 0}</strong></article>
+        <article className="stat-card"><span>Manufacturers</span><strong>{summary?.distinctManufacturers ?? 0}</strong></article>
+      </div>
+      <div className="stack-list">
+        <article className="stack-card">
+          <strong>Bulk catalog import</strong>
+          <p>Simulates supplier batch ingestion for industrial price lists and new product waves.</p>
+          <small>Top regions: {summary?.topRegions.join(", ")}</small>
+          <div className="action-row">
+            <button onClick={onImport}>Import supplier batch</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -403,6 +435,7 @@ export default function App() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [integrationLogs, setIntegrationLogs] = useState<IntegrationLog[]>([]);
   const [catalog, setCatalog] = useState<CatalogSearchResponse | null>(null);
+  const [catalogSummary, setCatalogSummary] = useState<CatalogSummary | null>(null);
   const [catalogFilters, setCatalogFilters] = useState({
     search: "",
     category: "",
@@ -443,7 +476,8 @@ export default function App() {
       api.getOffers().then(setOffers),
       api.getAuditLogs().then(setAuditLogs),
       api.getIntegrationLogs().then(setIntegrationLogs),
-      api.searchCatalog({ page: 1, pageSize: 24 }).then(setCatalog)
+      api.searchCatalog({ page: 1, pageSize: 24 }).then(setCatalog),
+      api.getCatalogSummary().then(setCatalogSummary)
     ]);
   }, []);
 
@@ -553,6 +587,50 @@ export default function App() {
     setCatalogFilters((current) => ({ ...current, ...changes }));
   };
 
+  const handleCatalogImport = async () => {
+    const importedItems: Product[] = [
+      {
+        id: crypto.randomUUID(),
+        sku: "SUP-DRV-90001",
+        name: "Supplier Drive Assembly",
+        category: "Motors",
+        manufacturer: "ABB",
+        region: "EMEA",
+        description: "Imported supplier drive assembly batch for sourcing validation.",
+        basePrice: 890,
+        currency: "EUR",
+        leadTimeDays: 16,
+        stockAvailable: 24
+      },
+      {
+        id: crypto.randomUUID(),
+        sku: "SUP-SWG-90002",
+        name: "Supplier Switchgear Rack",
+        category: "Switchgear",
+        manufacturer: "Schneider",
+        region: "LATAM",
+        description: "Imported switchgear rack for regional sourcing campaign.",
+        basePrice: 1320,
+        currency: "EUR",
+        leadTimeDays: 22,
+        stockAvailable: 11
+      }
+    ];
+
+    await api.importCatalog("SupplierBatchDemo", importedItems);
+    appendAudit("CatalogImported", "Catalog", "supplier-batch-demo");
+    setCatalogSummary((current) => current
+      ? {
+          ...current,
+          totalProducts: current.totalProducts + importedItems.length,
+          inStockProducts: current.inStockProducts + importedItems.filter((item) => item.stockAvailable > 0).length,
+          distinctManufacturers: current.distinctManufacturers,
+          distinctCategories: current.distinctCategories
+        }
+      : current);
+    handleCatalogFilterChange({ page: 1 });
+  };
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -567,6 +645,7 @@ export default function App() {
           <NavLink to="/approvals">Approvals</NavLink>
           <NavLink to="/offers">Offers</NavLink>
           <NavLink to="/catalog">Catalog</NavLink>
+          <NavLink to="/sourcing">Sourcing</NavLink>
           <NavLink to="/analytics">Analytics</NavLink>
           <NavLink to="/operations">Operations</NavLink>
         </nav>
@@ -591,6 +670,7 @@ export default function App() {
               />
             }
           />
+          <Route path="/sourcing" element={<SourcingPage summary={catalogSummary} onImport={handleCatalogImport} />} />
           <Route path="/analytics" element={<AnalyticsPage overview={nextOverview} />} />
           <Route path="/operations" element={<OperationsPage auditLogs={auditLogs} integrationLogs={integrationLogs} />} />
         </Routes>

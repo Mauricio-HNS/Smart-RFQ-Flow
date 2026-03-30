@@ -8,7 +8,7 @@ import {
   products as fallbackProducts,
   rfqs as fallbackRfqs
 } from "./data";
-import type { AuditLog, CatalogSearchResponse, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
+import type { AuditLog, CatalogImportResponse, CatalogSearchResponse, CatalogSummary, Customer, DashboardOverview, IntegrationLog, Offer, Product, Rfq } from "./types";
 
 const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5058";
 
@@ -53,6 +53,14 @@ export const api = {
   getOffers: () => getJson<Offer[]>("/api/offers", fallbackOffers),
   getAuditLogs: () => getJson<AuditLog[]>("/api/audit", fallbackAuditLogs),
   getIntegrationLogs: () => getJson<IntegrationLog[]>("/api/integrations/logs", fallbackIntegrationLogs),
+  getCatalogSummary: () => getJson<CatalogSummary>("/api/catalog/summary", {
+    totalProducts: fallbackCatalogProducts.length,
+    inStockProducts: fallbackCatalogProducts.filter((product) => product.stockAvailable > 0).length,
+    outOfStockProducts: fallbackCatalogProducts.filter((product) => product.stockAvailable === 0).length,
+    distinctManufacturers: Array.from(new Set(fallbackCatalogProducts.map((product) => product.manufacturer))).length,
+    distinctCategories: Array.from(new Set(fallbackCatalogProducts.map((product) => product.category))).length,
+    topRegions: Array.from(new Set(fallbackCatalogProducts.map((product) => product.region))).slice(0, 3)
+  }),
   searchCatalog: async (query: { search?: string; category?: string; manufacturer?: string; region?: string; inStockOnly?: boolean; page?: number; pageSize?: number; }) => {
     const params = new URLSearchParams();
 
@@ -90,6 +98,26 @@ export const api = {
 
     return getJson<CatalogSearchResponse>(`/api/catalog/search?${params.toString()}`, fallback);
   },
+  importCatalog: (sourceName: string, items: Product[]) =>
+    postJson<CatalogImportResponse>("/api/catalog/import", {
+      sourceName,
+      items: items.map((item) => ({
+        sku: item.sku,
+        name: item.name,
+        category: item.category,
+        manufacturer: item.manufacturer,
+        region: item.region,
+        description: item.description,
+        basePrice: item.basePrice,
+        currency: item.currency,
+        leadTimeDays: item.leadTimeDays,
+        stockAvailable: item.stockAvailable
+      }))
+    }, {
+      sourceName,
+      importedItems: items.length,
+      totalProductsAfterImport: fallbackCatalogProducts.length + items.length
+    }),
   approveRfq: (id: string) =>
     postJson<Rfq>(`/api/rfqs/${id}/approve`, { approvedBy: "22222222-2222-2222-2222-222222222222", comment: "Approved in demo workflow." }, fallbackRfqs[0]),
   rejectRfq: (id: string) =>

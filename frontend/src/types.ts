@@ -106,3 +106,18 @@ export interface CatalogSearchResponse {
   manufacturers: string[];
   regions: string[];
 }
+
+export interface CatalogSummary {
+  totalProducts: number;
+  inStockProducts: number;
+  outOfStockProducts: number;
+  distinctManufacturers: number;
+  distinctCategories: number;
+  topRegions: string[];
+}
+
+export interface CatalogImportResponse {
+  sourceName: string;
+  importedItems: number;
+  totalProductsAfterImport: number;
+}
