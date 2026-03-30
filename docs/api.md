@@ -18,6 +18,8 @@
 - `GET /api/products/{id}`
 - `POST /api/products`
 - `GET /api/catalog/search`
+- `GET /api/catalog/summary`
+- `POST /api/catalog/import`
 
 Query parameters supported by `/api/catalog/search`:
 

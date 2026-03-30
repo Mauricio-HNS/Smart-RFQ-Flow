@@ -67,6 +67,8 @@ public class Program
         app.MapGet("/api/catalog/search", (
             [AsParameters] CatalogQueryRequest request,
             SmartRfqService service) => Results.Ok(service.SearchCatalog(request)));
+        app.MapGet("/api/catalog/summary", (SmartRfqService service) => Results.Ok(service.GetCatalogSummary()));
+        app.MapPost("/api/catalog/import", (ImportCatalogRequest request, SmartRfqService service) => Results.Ok(service.ImportCatalog(request)));
 
         app.MapGet("/api/rfqs", (SmartRfqService service) => Results.Ok(service.GetRfqs()));
         app.MapGet("/api/rfqs/{id:guid}", (Guid id, SmartRfqService service) => Results.Ok(service.GetRfq(id)));

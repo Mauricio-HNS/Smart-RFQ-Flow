@@ -153,6 +153,56 @@ public sealed class SmartRfqService(ISmartRfqRepository repository)
             repository.GetProducts().Select(product => product.Region).Distinct().Order().ToArray());
     }
 
+    public CatalogSummaryResponse GetCatalogSummary()
+    {
+        var products = repository.GetProducts();
+
+        return new CatalogSummaryResponse(
+            products.Count,
+            products.Count(product => product.StockAvailable > 0),
+            products.Count(product => product.StockAvailable == 0),
+            products.Select(product => product.Manufacturer).Distinct().Count(),
+            products.Select(product => product.Category).Distinct().Count(),
+            products.GroupBy(product => product.Region)
+                .OrderByDescending(group => group.Count())
+                .Take(3)
+                .Select(group => group.Key)
+                .ToArray());
+    }
+
+    public CatalogImportResponse ImportCatalog(ImportCatalogRequest request)
+    {
+        if (request.Items.Count == 0)
+        {
+            throw new InvalidOperationException("Catalog import must contain at least one item.");
+        }
+
+        foreach (var item in request.Items)
+        {
+            repository.AddProduct(new Product
+            {
+                Sku = item.Sku,
+                Name = item.Name,
+                Category = item.Category,
+                Manufacturer = item.Manufacturer,
+                Region = item.Region,
+                Description = item.Description,
+                BasePrice = item.BasePrice,
+                Currency = item.Currency,
+                LeadTimeDays = item.LeadTimeDays,
+                StockAvailable = item.StockAvailable
+            });
+        }
+
+        AppendIntegrationLog("CatalogAdmin", request.SourceName, "CatalogImport", "Success", $"{request.Items.Count} items", "Import completed.");
+        AppendAudit("Catalog", Guid.NewGuid(), "CatalogImported", request.SourceName);
+
+        return new CatalogImportResponse(
+            request.SourceName,
+            request.Items.Count,
+            repository.GetProducts().Count);
+    }
+
     public Rfq CreateRfq(CreateRfqRequest request)
     {
         var customer = repository.FindCustomer(request.CustomerId)

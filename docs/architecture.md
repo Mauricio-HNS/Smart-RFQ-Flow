@@ -48,6 +48,13 @@ The product repository also simulates a larger industrial catalog so the system 
 - scalable catalog browsing patterns
 - future migration toward search engines such as Elasticsearch or OpenSearch
 
+The sourcing/admin flow now also simulates batch catalog ingestion, which is a stepping stone toward:
+
+- supplier file imports
+- nightly synchronization jobs
+- approval of new catalog batches
+- operational sourcing dashboards
+
 ### API
 
 Contains the HTTP surface for business actions, analytics and fake external integrations.

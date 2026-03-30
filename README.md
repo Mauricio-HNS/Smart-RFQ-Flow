@@ -15,6 +15,7 @@ This repository now includes:
 - solution and Docker Compose base for local evolution
 - CI workflow for build and test validation
 - industrial catalog explorer with server-side search, filters and pagination
+- sourcing console with catalog summary and batch import simulation
 
 ## Repository structure
 
@@ -45,6 +46,8 @@ Smart-RFQ-Flow/
 - `GET /api/products/{id}`
 - `POST /api/products`
 - `GET /api/catalog/search`
+- `GET /api/catalog/summary`
+- `POST /api/catalog/import`
 - `GET /api/rfqs`
 - `GET /api/rfqs/{id}`
 - `POST /api/rfqs`

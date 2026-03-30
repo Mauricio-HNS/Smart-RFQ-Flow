@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\SmartRfqFlow.Application\SmartRfqFlow.Application.csproj" />
     <ProjectReference Include="..\..\src\SmartRfqFlow.Domain\SmartRfqFlow.Domain.csproj" />
+    <ProjectReference Include="..\..\src\SmartRfqFlow.Infrastructure\SmartRfqFlow.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

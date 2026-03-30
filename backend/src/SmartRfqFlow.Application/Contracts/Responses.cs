@@ -37,3 +37,16 @@ public sealed record CatalogSearchResponse(
     IReadOnlyCollection<string> Categories,
     IReadOnlyCollection<string> Manufacturers,
     IReadOnlyCollection<string> Regions);
+
+public sealed record CatalogSummaryResponse(
+    int TotalProducts,
+    int InStockProducts,
+    int OutOfStockProducts,
+    int DistinctManufacturers,
+    int DistinctCategories,
+    IReadOnlyCollection<string> TopRegions);
+
+public sealed record CatalogImportResponse(
+    string SourceName,
+    int ImportedItems,
+    int TotalProductsAfterImport);

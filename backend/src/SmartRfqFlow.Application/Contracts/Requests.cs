@@ -46,3 +46,19 @@ public sealed record CatalogQueryRequest(
     bool InStockOnly,
     int Page = 1,
     int PageSize = 24);
+
+public sealed record ImportCatalogItemRequest(
+    string Sku,
+    string Name,
+    string Category,
+    string Manufacturer,
+    string Region,
+    string? Description,
+    decimal BasePrice,
+    string Currency,
+    int LeadTimeDays,
+    int StockAvailable);
+
+public sealed record ImportCatalogRequest(
+    string SourceName,
+    IReadOnlyCollection<ImportCatalogItemRequest> Items);
