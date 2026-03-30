@@ -41,6 +41,13 @@ Contains repository and integration concerns.
 
 The current implementation uses an in-memory repository to keep the MVP runnable with no database dependency, but the code is already shaped so this can evolve to EF Core + PostgreSQL.
 
+The product repository also simulates a larger industrial catalog so the system can demonstrate:
+
+- backend-side filtering
+- pagination
+- scalable catalog browsing patterns
+- future migration toward search engines such as Elasticsearch or OpenSearch
+
 ### API
 
 Contains the HTTP surface for business actions, analytics and fake external integrations.

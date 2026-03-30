@@ -82,6 +82,10 @@ public sealed class SmartRfqService(ISmartRfqRepository repository)
         {
             Sku = request.Sku,
             Name = request.Name,
+            Category = request.Category,
+            Manufacturer = request.Manufacturer,
+            Region = request.Region,
+            Description = request.Description,
             BasePrice = request.BasePrice,
             Currency = request.Currency,
             LeadTimeDays = request.LeadTimeDays,
@@ -91,6 +95,62 @@ public sealed class SmartRfqService(ISmartRfqRepository repository)
         repository.AddProduct(product);
         AppendAudit("Product", product.Id, "ProductCreated", "system");
         return product;
+    }
+
+    public CatalogSearchResponse SearchCatalog(CatalogQueryRequest request)
+    {
+        var page = Math.Max(1, request.Page);
+        var pageSize = Math.Clamp(request.PageSize, 1, 60);
+        var query = repository.GetProducts().AsQueryable();
+
+        // Keep search server-side so the UI never tries to load the whole industrial catalog at once.
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var search = request.Search.Trim();
+            query = query.Where(product =>
+                product.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                product.Sku.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                (product.Description != null && product.Description.Contains(search, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Category))
+        {
+            query = query.Where(product => product.Category.Equals(request.Category, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Manufacturer))
+        {
+            query = query.Where(product => product.Manufacturer.Equals(request.Manufacturer, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.Region))
+        {
+            query = query.Where(product => product.Region.Equals(request.Region, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (request.InStockOnly)
+        {
+            query = query.Where(product => product.StockAvailable > 0);
+        }
+
+        var filteredProducts = query
+            .OrderBy(product => product.Name)
+            .ToArray();
+
+        var items = filteredProducts
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(MapCatalogProduct)
+            .ToArray();
+
+        return new CatalogSearchResponse(
+            items,
+            filteredProducts.Length,
+            page,
+            pageSize,
+            repository.GetProducts().Select(product => product.Category).Distinct().Order().ToArray(),
+            repository.GetProducts().Select(product => product.Manufacturer).Distinct().Order().ToArray(),
+            repository.GetProducts().Select(product => product.Region).Distinct().Order().ToArray());
     }
 
     public Rfq CreateRfq(CreateRfqRequest request)
@@ -276,6 +336,20 @@ public sealed class SmartRfqService(ISmartRfqRepository repository)
 
     private Rfq GetRequiredRfq(Guid rfqId) =>
         repository.FindRfq(rfqId) ?? throw new InvalidOperationException("RFQ not found.");
+
+    private static CatalogProductResponse MapCatalogProduct(Product product) =>
+        new(
+            product.Id,
+            product.Sku,
+            product.Name,
+            product.Category,
+            product.Manufacturer,
+            product.Region,
+            product.Description,
+            product.BasePrice,
+            product.Currency,
+            product.LeadTimeDays,
+            product.StockAvailable);
 
     private void AppendAudit(string entityName, Guid entityId, string action, string performedBy)
     {

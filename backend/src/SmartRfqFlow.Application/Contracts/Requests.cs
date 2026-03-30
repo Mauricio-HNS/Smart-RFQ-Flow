@@ -9,6 +9,10 @@ public sealed record CreateCustomerRequest(
 public sealed record CreateProductRequest(
     string Sku,
     string Name,
+    string Category,
+    string Manufacturer,
+    string Region,
+    string? Description,
     decimal BasePrice,
     string Currency,
     int LeadTimeDays,
@@ -33,3 +37,12 @@ public sealed record ApprovalDecisionRequest(
 public sealed record SendOfferRequest(
     string RecipientEmail,
     string Channel);
+
+public sealed record CatalogQueryRequest(
+    string? Search,
+    string? Category,
+    string? Manufacturer,
+    string? Region,
+    bool InStockOnly,
+    int Page = 1,
+    int PageSize = 24);

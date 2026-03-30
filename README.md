@@ -14,6 +14,7 @@ This repository now includes:
 - React + TypeScript frontend with dashboard, RFQs, create flow, approvals, offers, catalog, analytics and operations views
 - solution and Docker Compose base for local evolution
 - CI workflow for build and test validation
+- industrial catalog explorer with server-side search, filters and pagination
 
 ## Repository structure
 
@@ -43,6 +44,7 @@ Smart-RFQ-Flow/
 - `GET /api/products`
 - `GET /api/products/{id}`
 - `POST /api/products`
+- `GET /api/catalog/search`
 - `GET /api/rfqs`
 - `GET /api/rfqs/{id}`
 - `POST /api/rfqs`
@@ -96,6 +98,15 @@ Technical notes live in:
 - `docs/architecture.md`
 - `docs/domain-workflow.md`
 - `docs/api.md`
+
+## Catalog strategy
+
+The catalog layer now follows a more realistic client-facing pattern:
+
+- search happens on the backend
+- filters are category, manufacturer, region and stock availability
+- pagination prevents the frontend from loading the entire catalog at once
+- the in-memory seed simulates a larger industrial catalog so the UI can demonstrate scale-oriented behavior
 
 ## Suggested next steps
 

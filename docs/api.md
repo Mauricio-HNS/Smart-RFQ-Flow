@@ -17,6 +17,17 @@
 - `GET /api/products`
 - `GET /api/products/{id}`
 - `POST /api/products`
+- `GET /api/catalog/search`
+
+Query parameters supported by `/api/catalog/search`:
+
+- `search`
+- `category`
+- `manufacturer`
+- `region`
+- `inStockOnly`
+- `page`
+- `pageSize`
 
 ### RFQs
 

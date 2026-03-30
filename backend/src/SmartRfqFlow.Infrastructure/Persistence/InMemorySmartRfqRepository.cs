@@ -6,6 +6,9 @@ namespace SmartRfqFlow.Infrastructure.Persistence;
 
 public sealed class InMemorySmartRfqRepository : ISmartRfqRepository
 {
+    private static readonly string[] CatalogCategories = ["Sensors", "Controllers", "Motors", "Valves", "Pumps", "Switchgear"];
+    private static readonly string[] CatalogManufacturers = ["Siemens", "ABB", "Schneider", "Bosch Rexroth", "Honeywell", "Emerson"];
+    private static readonly string[] CatalogRegions = ["EMEA", "North America", "LATAM", "APAC"];
     private readonly List<User> _users;
     private readonly List<Customer> _customers;
     private readonly List<Product> _products;
@@ -56,29 +59,7 @@ public sealed class InMemorySmartRfqRepository : ISmartRfqRepository
             }
         ];
 
-        _products =
-        [
-            new Product
-            {
-                Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
-                Sku = "RFQ-CPU-100",
-                Name = "Industrial Controller",
-                BasePrice = 490m,
-                Currency = "EUR",
-                LeadTimeDays = 7,
-                StockAvailable = 120
-            },
-            new Product
-            {
-                Id = Guid.Parse("10000000-0000-0000-0000-000000000002"),
-                Sku = "RFQ-SNS-200",
-                Name = "Advanced Sensor Pack",
-                BasePrice = 175m,
-                Currency = "EUR",
-                LeadTimeDays = 14,
-                StockAvailable = 42
-            }
-        ];
+        _products = BuildIndustrialCatalog();
 
         var seededRfq = new Rfq
         {
@@ -169,5 +150,63 @@ public sealed class InMemorySmartRfqRepository : ISmartRfqRepository
     {
         _processedMessages.Add(processedMessage);
         return processedMessage;
+    }
+
+    private static List<Product> BuildIndustrialCatalog()
+    {
+        var products = new List<Product>
+        {
+            new()
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000001"),
+                Sku = "RFQ-CPU-100",
+                Name = "Industrial Controller",
+                Category = "Controllers",
+                Manufacturer = "Siemens",
+                Region = "EMEA",
+                Description = "Modular controller for multi-line industrial automation environments.",
+                BasePrice = 490m,
+                Currency = "EUR",
+                LeadTimeDays = 7,
+                StockAvailable = 120
+            },
+            new()
+            {
+                Id = Guid.Parse("10000000-0000-0000-0000-000000000002"),
+                Sku = "RFQ-SNS-200",
+                Name = "Advanced Sensor Pack",
+                Category = "Sensors",
+                Manufacturer = "Honeywell",
+                Region = "EMEA",
+                Description = "Multi-signal sensor pack for predictive maintenance programs.",
+                BasePrice = 175m,
+                Currency = "EUR",
+                LeadTimeDays = 14,
+                StockAvailable = 42
+            }
+        };
+
+        for (var index = 1; index <= 1200; index++)
+        {
+            var category = CatalogCategories[index % CatalogCategories.Length];
+            var manufacturer = CatalogManufacturers[index % CatalogManufacturers.Length];
+            var region = CatalogRegions[index % CatalogRegions.Length];
+
+            products.Add(new Product
+            {
+                Sku = $"IND-{category[..3].ToUpperInvariant()}-{index:00000}",
+                Name = $"{manufacturer} {category} Module {index:0000}",
+                Category = category,
+                Manufacturer = manufacturer,
+                Region = region,
+                Description = $"Industrial-grade {category.ToLowerInvariant()} component for {region} catalog programs and enterprise sourcing workflows.",
+                BasePrice = 80m + (index % 45) * 17m,
+                Currency = "EUR",
+                LeadTimeDays = 3 + index % 21,
+                StockAvailable = index % 9 == 0 ? 0 : 20 + index % 180
+            });
+        }
+
+        return products;
     }
 }
