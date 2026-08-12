@@ -4,53 +4,53 @@
   <img src="https://img.shields.io/badge/ASP.NET%20Core-9-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt="ASP.NET Core" />
   <img src="https://img.shields.io/badge/React-TypeScript-0f172a?style=for-the-badge&logo=react&logoColor=61dafb" alt="React TypeScript" />
   <img src="https://img.shields.io/badge/Architecture-Modular%20Monolith-153b52?style=for-the-badge" alt="Modular Monolith" />
-  <img src="https://img.shields.io/badge/Domain-RFQ%20to%20Offer-5b2333?style=for-the-badge" alt="RFQ to Offer" />
 </p>
 
-Smart RFQ Flow is a mini-enterprise platform that simulates the full RFQ-to-Offer lifecycle: customer onboarding, RFQ creation, pricing orchestration, approval workflow, offer generation, auditability, analytics and a sourcing-oriented catalog experience.
+Enterprise-style RFQ-to-Offer workflow built with ASP.NET Core and React. The project focuses on domain modeling, workflow orchestration, auditability and a clean migration path toward distributed infrastructure.
 
-## Why this repository is strong for portfolio reviews
+> Portfolio showcase. External Salesforce/SAP integrations and infrastructure components are simulated where noted.
 
-- clear modular monolith structure with room to evolve into microservices
-- realistic enterprise workflow instead of isolated CRUD screens
-- backend-driven catalog search, filters and pagination
-- audit and integration logs for traceability
-- React frontend with a polished business-facing interface
-- clean expansion path for PostgreSQL, JWT, RabbitMQ and Playwright
+## What it demonstrates
 
-## Current scope
-
-- RFQ lifecycle from draft to sent offer
+- RFQ lifecycle from draft through approval and offer delivery
 - customer and product management
-- approval desk and offer center
-- analytics overview and processing metrics
-- fake Salesforce and SAP integrations
-- industrial catalog explorer
-- sourcing console with batch-import simulation
+- pricing and approval workflows
+- audit and integration logs
+- catalog search, filtering and pagination
+- analytics and operational metrics
+- React + TypeScript business interface
+- modular-monolith backend with explicit Domain/Application/Infrastructure boundaries
 
 ## Architecture
 
 ```text
-frontend (React + TypeScript)
-    ->
-backend API (ASP.NET Core)
-    ->
-application layer
-    ->
-domain layer
-    ->
-in-memory infrastructure today
+React + TypeScript
+        │
+        ▼
+ASP.NET Core API
+        │
+        ├── Application
+        ├── Domain
+        ├── Infrastructure
+        └── Worker
 ```
 
-Projects:
+The current implementation uses in-memory infrastructure for rapid local execution. PostgreSQL, JWT/RBAC, RabbitMQ and automated E2E testing are planned evolution paths rather than current production capabilities.
 
-- `backend/src/SmartRfqFlow.Api`
-- `backend/src/SmartRfqFlow.Application`
-- `backend/src/SmartRfqFlow.Domain`
-- `backend/src/SmartRfqFlow.Infrastructure`
-- `backend/src/SmartRfqFlow.Worker`
-- `backend/tests/SmartRfqFlow.Tests`
-- `frontend`
+## Repository structure
+
+```text
+backend/
+  src/SmartRfqFlow.Api
+  src/SmartRfqFlow.Application
+  src/SmartRfqFlow.Domain
+  src/SmartRfqFlow.Infrastructure
+  src/SmartRfqFlow.Worker
+  tests/SmartRfqFlow.Tests
+frontend/
+docs/
+.github/workflows/ci.yml
+```
 
 ## Key endpoints
 
@@ -65,11 +65,11 @@ Projects:
 - `GET /api/integrations/logs`
 - `GET /health`
 
-Full technical notes:
+Detailed documentation:
 
-- `docs/architecture.md`
-- `docs/domain-workflow.md`
-- `docs/api.md`
+- [`docs/architecture.md`](docs/architecture.md)
+- [`docs/domain-workflow.md`](docs/domain-workflow.md)
+- [`docs/api.md`](docs/api.md)
 
 ## Run locally
 
@@ -93,19 +93,23 @@ npm install
 npm run dev
 ```
 
-The frontend expects `http://localhost:5058` by default and falls back to local demo data if the API is offline.
+The frontend expects `http://localhost:5058` by default and falls back to local demo data when the API is offline.
 
-## Quality and repo hygiene
+## Engineering quality
 
-- solution file at `SmartRfqFlow.sln`
-- CI workflow ready in `.github/workflows/ci.yml`
-- root `.gitignore` covers .NET, Node and local build artifacts
-- tests cover RFQ workflow rules plus catalog import behavior
+- solution file at `SmartRfqFlow.slnx`
+- CI workflow under `.github/workflows/ci.yml`
+- tests for RFQ rules and catalog import behavior
+- root `.gitignore` covering .NET and Node artifacts
 
-## Next upgrades
+## Roadmap
 
-1. Replace in-memory persistence with EF Core + PostgreSQL.
-2. Add JWT authentication and role-based authorization.
-3. Introduce RabbitMQ and idempotent async processing.
-4. Add CSV or Excel catalog ingestion.
-5. Add Playwright E2E coverage.
+1. EF Core + PostgreSQL persistence
+2. JWT authentication and RBAC
+3. RabbitMQ with idempotent asynchronous processing
+4. CSV/Excel catalog ingestion
+5. Playwright E2E coverage
+
+## Portfolio notes
+
+See [`docs/portfolio/PROJECT_POSITIONING.md`](docs/portfolio/PROJECT_POSITIONING.md) for the intended scope and positioning.
